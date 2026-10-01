@@ -93,3 +93,131 @@ window.RESEARCH_METHOD_QUESTIONS = {
     {id:"e10",topic:"가설검정",importance:3,question:"가설검정의 제1종·제2종 오류와 유의수준·유의확률을 설명하시오.",minChars:500,checklist:["귀무가설","제1종 오류와 α","제2종 오류와 β","유의수준","유의확률·검증력"],model:"가설검정은 표본자료를 이용해 변수 간 관계가 없다는 귀무가설을 기각할지 판단하는 절차다. 제1종 오류는 실제로 귀무가설이 참인데 이를 기각하여 관계나 차이가 있다고 결론내리는 오류이며 α로 표시한다. 유의수준은 연구자가 분석 전에 허용하기로 정한 제1종 오류의 확률적 기준으로 흔히 .05나 .01을 사용한다. 제2종 오류는 실제로 귀무가설이 거짓인데 이를 채택하여 존재하는 관계나 차이를 놓치는 오류이며 β로 표시한다. 제2종 오류가 작을수록 검증력은 높아진다. 유의확률은 자료 수집 후 표본통계량에서 계산되는 값으로, 귀무가설 아래에서 관찰된 결과 이상이 나올 확률을 나타낸다. 유의확률이 정한 유의수준보다 작으면 귀무가설을 기각한다. 유의수준을 지나치게 낮추면 제1종 오류는 줄지만 제2종 오류가 커질 수 있으므로 연구목적과 오류의 비용을 함께 고려해야 한다."}
   ]
 };
+
+// 서술형은 단순 글자 수가 아니라 문제별 핵심 개념 묶음으로 자동 채점한다.
+// 각 묶음은 표시명과 허용되는 표현들로 구성되며, 표현 중 하나가 답안에 있으면 인정한다.
+const essayCriterion = (label, ...terms) => ({ label, terms });
+const essayRubrics = {
+  e01: [
+    essayCriterion("가설의 정의", "가정적 서술", "잠정적 해답", "변수 관련성"),
+    essayCriterion("연구문제에 적합한 해답", "연구문제", "적합한 해답"),
+    essayCriterion("간단성과 명료성", "간단", "명료"),
+    essayCriterion("변수 관계 명시", "변수 관계", "변수간 관계"),
+    essayCriterion("실증적 검증 가능성", "실증적 검증", "경험적 검증", "관찰이나 실험"),
+    essayCriterion("귀무가설", "귀무가설"),
+    essayCriterion("대립가설", "대립가설", "연구가설"),
+    essayCriterion("가치판단 명제의 한계", "가치판단", "검증할 수 없는")
+  ],
+  e02: [
+    essayCriterion("관찰법", "관찰법", "현장 관찰"),
+    essayCriterion("관찰의 체계적 계획·기록", "체계적 계획", "체계적으로 기록", "관찰 기록"),
+    essayCriterion("조사법", "조사법", "설문지법", "면접법"),
+    essayCriterion("설문지법", "설문", "익명", "대량 조사"),
+    essayCriterion("면접법", "면접", "심층면접", "표적집단"),
+    essayCriterion("실험법의 독립변수 조작", "독립변수 조작", "독립변수를 조작"),
+    essayCriterion("가외변수 통제", "가외변수 통제", "외생변수 통제"),
+    essayCriterion("종속변수 측정", "종속변수", "결과변수"),
+    essayCriterion("각 방법의 장점", "장점", "경제적", "인과관계"),
+    essayCriterion("각 방법의 한계", "단점", "한계", "편견", "시간과 비용")
+  ],
+  e03: [
+    essayCriterion("확률표집의 정의", "확률표집", "무작위 추출"),
+    essayCriterion("단순무작위표집", "단순무작위"),
+    essayCriterion("계통표집", "계통표집", "일정한 간격"),
+    essayCriterion("층화표집", "층화표집", "동질적 층"),
+    essayCriterion("군집표집", "군집표집", "군집을 단위"),
+    essayCriterion("비확률표집의 정의", "비확률표집", "선택확률을 알 수"),
+    essayCriterion("편의표집", "편의표집"),
+    essayCriterion("판단표집", "판단표집"),
+    essayCriterion("할당표집", "할당표집"),
+    essayCriterion("대표성·표본오차 비교", "대표성", "표본오차", "일반화")
+  ],
+  e04: [
+    essayCriterion("명명척도", "명명척도", "명목척도"),
+    essayCriterion("명명척도의 분류 기능", "유목", "분류", "최빈치"),
+    essayCriterion("서열척도", "서열척도", "순위"),
+    essayCriterion("서열 간 간격의 한계", "차이의 크기", "간격을 알 수 없"),
+    essayCriterion("등간척도", "등간척도", "간격이 동일"),
+    essayCriterion("등간척도의 절대 0 부재", "절대 0", "절대영점"),
+    essayCriterion("비율척도", "비율척도"),
+    essayCriterion("비율·배수 비교", "배수", "비율 비교"),
+    essayCriterion("측정수준과 통계기법", "통계기법", "측정수준")
+  ],
+  e05: [
+    essayCriterion("신뢰도의 정의", "신뢰도", "반복측정", "일관성"),
+    essayCriterion("재검사법", "재검사"),
+    essayCriterion("내적 일관성법", "내적 일관성", "크론바하"),
+    essayCriterion("대안형법", "대안형", "평행검사"),
+    essayCriterion("반분법", "반분법"),
+    essayCriterion("타당도의 정의", "타당도", "측정하려는 개념"),
+    essayCriterion("내용타당도", "내용타당도"),
+    essayCriterion("기준관련타당도", "기준관련타당도", "예측타당도", "동시타당도"),
+    essayCriterion("구성체타당도", "구성체타당도", "구성타당도"),
+    essayCriterion("판별·수렴타당도", "판별타당도", "수렴타당도")
+  ],
+  e06: [
+    essayCriterion("극대소화통제 원리", "극대소화통제", "극대 극소 통제"),
+    essayCriterion("체계적 분산 극대화", "체계적 분산", "분산 극대화"),
+    essayCriterion("가외분산 통제", "가외분산", "가외변수 통제"),
+    essayCriterion("오차분산 극소화", "오차분산", "오차 최소화", "오차 극소화"),
+    essayCriterion("무선화", "무선화", "무작위 배치"),
+    essayCriterion("짝짓기", "짝짓기", "매칭"),
+    essayCriterion("가외변수 제거", "가외변수 제거", "제거법"),
+    essayCriterion("독립변수로 승격", "독립변수 승격", "격상법"),
+    essayCriterion("균형화", "균형화", "상쇄법"),
+    essayCriterion("통계적 통제", "통계적 통제", "공분산분석")
+  ],
+  e07: [
+    essayCriterion("기술통계의 목적", "기술통계", "자료를 요약", "집단의 특성"),
+    essayCriterion("빈도분포", "빈도분포"),
+    essayCriterion("집중경향치", "집중경향"),
+    essayCriterion("분산도", "분산도", "산포도"),
+    essayCriterion("상관분석", "상관분석"),
+    essayCriterion("추리통계의 목적", "추리통계", "모집단", "일반화"),
+    essayCriterion("확률·표집분포", "확률", "표집분포"),
+    essayCriterion("모수통계의 가정", "모수적", "정규성", "분산의 동질성"),
+    essayCriterion("비모수통계", "비모수"),
+    essayCriterion("표본에서 모집단 추론", "표본", "모수 추정", "가설 검정")
+  ],
+  e08: [
+    essayCriterion("산술평균", "산술평균", "평균"),
+    essayCriterion("중앙치", "중앙치", "중앙값"),
+    essayCriterion("최빈치", "최빈치", "최빈값"),
+    essayCriterion("극단치의 영향", "극단치", "이상치"),
+    essayCriterion("범위", "범위", "최고값", "최저값"),
+    essayCriterion("평균편차", "평균편차"),
+    essayCriterion("분산", "분산", "편차를 제곱"),
+    essayCriterion("표준편차", "표준편차", "분산의 제곱근"),
+    essayCriterion("변이계수", "변이계수", "상대적 산포"),
+    essayCriterion("척도에 따른 사용", "명명척도", "서열척도", "등간척도")
+  ],
+  e09: [
+    essayCriterion("완전무작위설계", "완전무작위", "무작위 배치", "진실험"),
+    essayCriterion("실험-통제집단 설계", "실험 통제집단"),
+    essayCriterion("사전-사후 통제집단", "사전 사후 통제집단"),
+    essayCriterion("변화량 비교", "변화량", "사전검사", "사후검사"),
+    essayCriterion("사전검사 효과", "사전검사 효과"),
+    essayCriterion("모의 사전-사후", "모의 사전 사후"),
+    essayCriterion("세 집단 설계", "세 집단"),
+    essayCriterion("네 집단 설계", "네 집단"),
+    essayCriterion("솔로몬 설계", "솔로몬"),
+    essayCriterion("통제력과 비용 비교", "통제력", "표본과 비용", "많은 표본")
+  ],
+  e10: [
+    essayCriterion("귀무가설", "귀무가설"),
+    essayCriterion("제1종 오류", "제1종 오류", "1종 오류"),
+    essayCriterion("참인 귀무가설 기각", "참인 귀무가설", "귀무가설이 참인데 기각"),
+    essayCriterion("알파(α)", "알파", "α"),
+    essayCriterion("제2종 오류", "제2종 오류", "2종 오류"),
+    essayCriterion("거짓인 귀무가설 채택", "거짓인 귀무가설", "귀무가설이 거짓인데 채택"),
+    essayCriterion("베타(β)", "베타", "β"),
+    essayCriterion("유의수준", "유의수준", "허용확률"),
+    essayCriterion("유의확률", "유의확률", "p값", "p-value"),
+    essayCriterion("검증력", "검증력", "1-β"),
+    essayCriterion("유의확률과 유의수준 비교", "유의확률이 유의수준보다", "p값이", "귀무가설을 기각")
+  ]
+};
+
+window.RESEARCH_METHOD_QUESTIONS.essay.forEach((item) => {
+  item.rubric = essayRubrics[item.id] || [];
+});

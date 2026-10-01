@@ -67,7 +67,7 @@
     els.importance.textContent = item.importance === 3 ? "최우선" : item.importance === 2 ? "중요" : "보충";
     els["format-badge"].textContent = typeLabels[type];
     els.position.textContent = `${index + 1} / ${session.length}`;
-    els["score-label"].textContent = type === "essay" ? `충분히 씀 ${score}` : `정답 ${score}`;
+    els["score-label"].textContent = `정답 ${score}`;
     els["progress-fill"].style.width = `${((index + 1) / Math.max(1, session.length)) * 100}%`;
     const saved = store.bookmarks.includes(keyFor(item)); els.bookmark.textContent = saved ? "★" : "☆"; els.bookmark.classList.toggle("is-active", saved);
   }
@@ -94,15 +94,15 @@
   function renderEssay(item) {
     showPanel("essay-panel"); els["essay-question"].textContent = item.question; els["essay-min"].textContent = item.minChars; els["essay-answer"].value = ""; els["essay-answer"].disabled = false; els["essay-answer"].className = "essay-answer"; els["char-count"].textContent = "0자";
     els["reveal-essay"].disabled = false; els["essay-review"].hidden = true; els["essay-next"].hidden = true; els["essay-checklist"].replaceChildren();
-    document.querySelectorAll("[data-rating]").forEach((button) => { button.disabled = false; button.classList.remove("selected"); });
-    els["study-tip"].textContent = "정의 → 유형·요건 → 장단점·비교 → 결론 순으로 구조를 먼저 잡으세요.";
+    els["essay-auto-result"].className = "essay-auto-result"; els["essay-result"].textContent = ""; els["essay-detail"].textContent = "";
+    els["study-tip"].textContent = "핵심 개념을 빠뜨리지 말고 정의 → 유형·요건 → 비교·장단점 순서로 쓰세요.";
   }
 
   function record(item, correct, retrySoon = false) {
     const stat = getStat(item); stat.attempts += 1; stat.lastAttempt = Date.now(); store.totals.attempts += 1;
     if (correct) { stat.correct += 1; stat.streak += 1; store.totals.correct += 1; score += 1; const gaps = [60*60e3,24*60*60e3,3*24*60*60e3,7*24*60*60e3,14*24*60*60e3]; stat.nextDue = Date.now() + gaps[Math.min(stat.streak - 1, gaps.length - 1)]; }
     else { stat.wrong += 1; stat.streak = 0; stat.nextDue = retrySoon ? Date.now() + 6*60*60e3 : Date.now(); }
-    store.stats[keyFor(item)] = stat; persist(); els["score-label"].textContent = type === "essay" ? `충분히 씀 ${score}` : `정답 ${score}`; return stat;
+    store.stats[keyFor(item)] = stat; persist(); els["score-label"].textContent = `정답 ${score}`; return stat;
   }
   function gradeCloze(reveal = false) {
     if (answered) return; const item = current(); const input = els["cloze-answer"].value; if (!input.trim() && !reveal) { els["cloze-answer"].focus(); return; }
@@ -114,22 +114,31 @@
     if (answered) return; const item = current(); const value = normalize(els["keyword-answer"].value); if (!value) { els["keyword-answer"].focus(); return; }
     const hits = item.aliases.map((group) => group.some((term) => value.includes(normalize(term)))); const found = hits.filter(Boolean).length; const required = Math.ceil(item.keywords.length * .7); const correct = found >= required; answered = true; record(item, correct);
     els["keyword-answer"].disabled = true; els["check-keyword"].disabled = true; els["keyword-answer"].classList.add(correct ? "good" : "bad"); els["keyword-feedback"].hidden = false; els["keyword-feedback"].classList.toggle("is-wrong", !correct);
-    els["keyword-result"].textContent = `${item.keywords.length}개 중 ${found}개 확인 · ${correct ? "핵심 통과" : "보완 필요"}`;
+    const percent = Math.round(found / item.keywords.length * 100);
+    els["keyword-result"].textContent = `자동채점 ${percent}점 · ${correct ? "정답" : "오답"}`;
     els["keyword-grid"].replaceChildren(...item.keywords.map((word, i) => { const span = document.createElement("span"); span.textContent = `${hits[i] ? "✓" : "+"} ${word}`; span.className = hits[i] ? "found" : "missing"; return span; })); els["keyword-model"].textContent = item.model;
   }
-  function revealEssay() {
-    if (revealed) return; const item = current(); revealed = true; els["essay-review"].hidden = false; els["reveal-essay"].disabled = true;
-    els["essay-checklist"].replaceChildren(...item.checklist.map((criterion) => { const label = document.createElement("label"); const input = document.createElement("input"); input.type = "checkbox"; label.append(input, document.createTextNode(criterion)); return label; }));
+  function gradeEssay() {
+    if (answered) return;
+    const item = current(); const raw = els["essay-answer"].value.trim();
+    if (!raw) { els["essay-answer"].focus(); return; }
+    const value = normalize(raw); const rubric = item.rubric || [];
+    const hits = rubric.map((criterion) => criterion.terms.some((term) => value.includes(normalize(term))));
+    const found = hits.filter(Boolean).length; const total = Math.max(1, rubric.length); const required = Math.ceil(total * .7);
+    const percent = Math.round(found / total * 100); const correct = found >= required;
+    answered = true; revealed = true; record(item, correct, !correct);
+    els["essay-answer"].disabled = true; els["essay-answer"].classList.add(correct ? "good" : "bad"); els["reveal-essay"].disabled = true;
+    els["essay-review"].hidden = false; els["essay-next"].hidden = false; els["essay-auto-result"].classList.toggle("is-wrong", !correct);
+    els["essay-result"].textContent = `자동채점 ${percent}점 · ${correct ? "정답" : "오답"}`;
+    const lengthNote = raw.length >= item.minChars ? "권장 분량 충족" : `권장 분량까지 ${item.minChars - raw.length}자 부족`;
+    els["essay-detail"].textContent = `핵심 개념 ${found}/${total}개 확인 · 70점 이상 통과 · ${lengthNote}`;
+    els["essay-checklist"].replaceChildren(...rubric.map((criterion, i) => { const label = document.createElement("label"); label.className = hits[i] ? "found" : "missing"; const input = document.createElement("input"); input.type = "checkbox"; input.checked = hits[i]; input.disabled = true; const mark = hits[i] ? "포함" : "누락"; label.append(input, document.createTextNode(`${criterion.label} · ${mark}`)); return label; }));
     els["essay-model"].textContent = item.model; els["essay-review"].scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }
-  function rateEssay(rating) {
-    if (answered || !revealed) return; answered = true; const good = rating === "remember"; record(current(), good, rating === "uncertain");
-    document.querySelectorAll("[data-rating]").forEach((button) => { button.disabled = true; button.classList.toggle("selected", button.dataset.rating === rating); }); els["essay-answer"].disabled = true; els["essay-next"].hidden = false;
   }
   function next() { index += 1; renderQuestion(); window.scrollTo({ top: 0, behavior: "smooth" }); }
   function renderComplete() {
     showPanel("completion"); els["completion-title"].textContent = `${typeLabels[type]} · ${modeLabels[mode]}`; els["completion-score"].textContent = score; els["completion-total"].textContent = ` / ${session.length}`;
-    els["completion-copy"].textContent = type === "essay" ? "일부 누락·다시 공부로 표시한 답안은 복습 일정에 반영했습니다." : score === session.length ? "전부 맞혔습니다. 다음 단계로 넘어가도 좋습니다." : "틀린 문제는 오답 복습에서 더 자주 출제됩니다."; els["progress-fill"].style.width = "100%";
+    els["completion-copy"].textContent = score === session.length ? "전부 맞혔습니다. 다음 단계로 넘어가도 좋습니다." : "70점 미만 답안은 오답 복습에서 더 자주 출제됩니다."; els["progress-fill"].style.width = "100%";
   }
 
   function updateSummaries() { const n = dueCount(); els["due-summary"].textContent = `복습 대기 ${n}문제`; els["today-summary"].textContent = n ? `오늘 다시 볼 문제 ${n}개` : "핵심문제부터 시작하세요."; }
@@ -149,10 +158,11 @@
   document.querySelectorAll("[data-view]").forEach((button)=>button.addEventListener("click",()=>switchView(button.dataset.view)));
   document.querySelectorAll("[data-type]").forEach((button)=>button.addEventListener("click",()=>setType(button.dataset.type)));
   document.querySelectorAll(".mode").forEach((button)=>button.addEventListener("click",()=>{mode=button.dataset.mode;document.querySelectorAll(".mode").forEach((b)=>{const active=b===button;b.classList.toggle("is-selected",active);b.setAttribute("aria-checked",String(active));});}));
-  document.querySelectorAll(".next").forEach((button)=>button.addEventListener("click",next)); document.querySelectorAll("[data-rating]").forEach((button)=>button.addEventListener("click",()=>rateEssay(button.dataset.rating)));
+  document.querySelectorAll(".next").forEach((button)=>button.addEventListener("click",next));
   document.querySelectorAll("[data-open-progress]").forEach((button)=>button.addEventListener("click",()=>switchView("progress")));
   els.restart.addEventListener("click",startSession); els.repeat.addEventListener("click",startSession); els["check-cloze"].addEventListener("click",()=>gradeCloze(false)); els["cloze-reveal"].addEventListener("click",()=>gradeCloze(true)); els["cloze-hint"].addEventListener("click",()=>{els["cloze-answer"].placeholder=current().hint;els["cloze-answer"].focus();});
-  els["cloze-answer"].addEventListener("keydown",(event)=>{if(event.key!=="Enter")return;event.preventDefault();answered?next():gradeCloze(false);}); els["check-keyword"].addEventListener("click",gradeKeyword); els["reveal-essay"].addEventListener("click",revealEssay); els["essay-answer"].addEventListener("input",()=>{els["char-count"].textContent=`${els["essay-answer"].value.length}자`;});
+  els["cloze-answer"].addEventListener("keydown",(event)=>{if(event.key!=="Enter")return;event.preventDefault();answered?next():gradeCloze(false);}); els["check-keyword"].addEventListener("click",gradeKeyword); els["reveal-essay"].addEventListener("click",gradeEssay); els["essay-answer"].addEventListener("input",()=>{els["char-count"].textContent=`${els["essay-answer"].value.length}자`;});
+  els["essay-answer"].addEventListener("keydown",(event)=>{if(event.key==="Enter"&&(event.ctrlKey||event.metaKey)){event.preventDefault();gradeEssay();}});
   els.bookmark.addEventListener("click",()=>{const key=keyFor(current());store.bookmarks=store.bookmarks.includes(key)?store.bookmarks.filter((x)=>x!==key):[...store.bookmarks,key];persist();renderQuestion();});
   els["reset-progress"].addEventListener("click",()=>els["reset-dialog"].showModal()); els["reset-dialog"].addEventListener("close",()=>{if(els["reset-dialog"].returnValue!=="confirm")return;store={stats:{},totals:{attempts:0,correct:0,sessions:0},bookmarks:[]};persist();renderProgress();});
 

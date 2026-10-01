@@ -59,7 +59,7 @@
             <p class="prompt" id="keyword-question"></p>
             <label for="keyword-answer">생각나는 핵심어를 모두 쓰세요</label>
             <textarea id="keyword-answer" rows="4" placeholder="예: 무선화, 짝짓기, 가외변수 제거"></textarea>
-            <button class="primary full" id="check-keyword">키워드 확인</button>
+            <button class="primary full" id="check-keyword">키워드 자동 채점</button>
             <section class="feedback" id="keyword-feedback" hidden><strong id="keyword-result"></strong><div class="keyword-grid" id="keyword-grid"></div><p id="keyword-model"></p><button class="primary next">다음 문제 →</button></section>
           </section>
 
@@ -67,12 +67,11 @@
             <p class="prompt" id="essay-question"></p>
             <div class="essay-meta"><span>권장: 최소 <b id="essay-min">500</b>자</span><span id="char-count">0자</span></div>
             <textarea id="essay-answer" class="essay-answer" rows="12" placeholder="정의 → 핵심 내용 → 비교·장단점 순서로 답안을 작성하세요."></textarea>
-            <button class="primary full" id="reveal-essay">채점기준·모범답안 보기</button>
+            <button class="primary full" id="reveal-essay">서술형 자동 채점</button>
             <section class="essay-review" id="essay-review" hidden>
-              <h3>채점 체크리스트</h3><div id="essay-checklist" class="checklist"></div>
+              <div class="essay-auto-result" id="essay-auto-result"><strong id="essay-result"></strong><p id="essay-detail"></p></div>
+              <h3>핵심어 채점표</h3><div id="essay-checklist" class="checklist"></div>
               <details><summary>모범답안 펼치기</summary><p id="essay-model"></p></details>
-              <p class="self-label">내 답안에 핵심 내용이 들어갔나요?</p>
-              <div class="self-grade"><button data-rating="remember">충분히 씀<small>복습 간격 늘리기</small></button><button data-rating="uncertain">일부 누락<small>곧 다시 보기</small></button><button data-rating="again">다시 공부<small>오답으로 저장</small></button></div>
               <button class="primary next" id="essay-next" hidden>다음 문제 →</button>
             </section>
           </section>
