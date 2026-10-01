@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#16342d">
+  <meta name="description" content="연구방법론 종합시험을 빈칸·키워드·서술형으로 반복하는 주관식 학습 도구">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <title>연구방법론 종합시험 훈련</title>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#study"><span class="brand-mark">R</span><span><strong>연구방법론</strong><small>종합시험 주관식 훈련</small></span></a>
+    <nav aria-label="주요 화면"><button class="nav is-active" data-view="study">문제 풀기</button><button class="nav" data-view="progress">학습 현황</button><button class="nav" data-view="guide">시험 범위</button></nav>
+  </header>
+
+  <main class="shell">
+    <aside class="sidebar">
+      <span class="eyebrow">출제 경향 반영</span>
+      <h2>오늘의 훈련</h2>
+      <p id="today-summary">핵심문제부터 시작하세요.</p>
+      <div class="mode-list" role="radiogroup" aria-label="출제 방식">
+        <button class="mode is-selected" data-mode="core" role="radio" aria-checked="true"><b>핵심 우선</b><small>30점·기출·중요 개념 중심</small></button>
+        <button class="mode" data-mode="review" role="radio" aria-checked="false"><b>오답 복습</b><small id="due-summary">복습 대기 0문제</small></button>
+        <button class="mode" data-mode="all" role="radio" aria-checked="false"><b>전체 순환</b><small>자료 전 범위를 고르게</small></button>
+      </div>
+      <label class="count-label">한 번에 <select id="question-count"><option>10</option><option selected>20</option><option>30</option></select>문제</label>
+      <button class="primary wide" id="restart">새 세션 시작</button>
+      <div class="source-note"><b>답안 분량</b><span>10점 개념형 150~200자<br>30점 설명형 최소 500자</span></div>
+    </aside>
+
+    <section class="workspace">
+      <section class="view is-active" id="view-study">
+        <div class="type-tabs" role="tablist" aria-label="문제 유형">
+          <button class="is-active" data-type="cloze" role="tab" aria-selected="true"><b>1</b><span>빈칸 문제<small>핵심 문장 회상</small></span></button>
+          <button data-type="keyword" role="tab" aria-selected="false"><b>2</b><span>키워드형<small>채점 기준어 쓰기</small></span></button>
+          <button data-type="essay" role="tab" aria-selected="false"><b>3</b><span>서술형<small>30점 답안 완성</small></span></button>
+        </div>
+
+        <div class="session-head">
+          <div><span class="eyebrow" id="session-label">빈칸 문제 · 핵심 우선</span><h1 id="page-title">핵심 문장을 정확히 완성하세요</h1></div>
+          <div class="score"><span id="score-label">정답 0</span><strong id="position">1 / 20</strong></div>
+        </div>
+        <div class="progress-line"><span id="progress-fill"></span></div>
+
+        <article class="question-card">
+          <header class="question-meta"><div><span class="badge" id="topic">가설</span><span class="badge important" id="importance">최우선</span><span class="badge outline" id="format-badge">빈칸</span></div><button id="bookmark" class="bookmark" aria-label="북마크">☆</button></header>
+
+          <section id="cloze-panel">
+            <p class="prompt cloze" id="cloze-text"></p>
+            <label for="cloze-answer">빈칸에 들어갈 말</label>
+            <div class="answer-row"><input id="cloze-answer" autocomplete="off" spellcheck="false" placeholder="정답을 입력하세요"><button class="primary" id="check-cloze">채점</button></div>
+            <div class="helpers"><button id="cloze-hint">힌트</button><button id="cloze-reveal">정답 보기</button></div>
+            <section class="feedback" id="cloze-feedback" hidden><strong id="cloze-result"></strong><p id="cloze-detail"></p><button class="primary next">다음 문제 →</button></section>
+          </section>
+
+          <section id="keyword-panel" hidden>
+            <p class="prompt" id="keyword-question"></p>
+            <label for="keyword-answer">생각나는 핵심어를 모두 쓰세요</label>
+            <textarea id="keyword-answer" rows="4" placeholder="예: 무선화, 짝짓기, 가외변수 제거"></textarea>
+            <button class="primary full" id="check-keyword">키워드 확인</button>
+            <section class="feedback" id="keyword-feedback" hidden><strong id="keyword-result"></strong><div class="keyword-grid" id="keyword-grid"></div><p id="keyword-model"></p><button class="primary next">다음 문제 →</button></section>
+          </section>
+
+          <section id="essay-panel" hidden>
+            <p class="prompt" id="essay-question"></p>
+            <div class="essay-meta"><span>권장: 최소 <b id="essay-min">500</b>자</span><span id="char-count">0자</span></div>
+            <textarea id="essay-answer" class="essay-answer" rows="12" placeholder="정의 → 핵심 내용 → 비교·장단점 순서로 답안을 작성하세요."></textarea>
+            <button class="primary full" id="reveal-essay">채점기준·모범답안 보기</button>
+            <section class="essay-review" id="essay-review" hidden>
+              <h3>채점 체크리스트</h3><div id="essay-checklist" class="checklist"></div>
+              <details><summary>모범답안 펼치기</summary><p id="essay-model"></p></details>
+              <p class="self-label">내 답안에 핵심 내용이 들어갔나요?</p>
+              <div class="self-grade"><button data-rating="remember">충분히 씀<small>복습 간격 늘리기</small></button><button data-rating="uncertain">일부 누락<small>곧 다시 보기</small></button><button data-rating="again">다시 공부<small>오답으로 저장</small></button></div>
+              <button class="primary next" id="essay-next" hidden>다음 문제 →</button>
+            </section>
+          </section>
+
+          <section class="completion" id="completion" hidden><span class="eyebrow">세션 완료</span><h2 id="completion-title"></h2><strong><span id="completion-score">0</span><small id="completion-total"> / 20</small></strong><p id="completion-copy"></p><div><button class="primary" id="repeat">같은 유형 다시 풀기</button><button class="secondary" data-open-progress>학습 현황 보기</button></div></section>
+        </article>
+        <p class="tip"><b>기억 팁</b><span id="study-tip">용어만 외우지 말고 정의와 비교대상을 함께 떠올리세요.</span></p>
+      </section>
+
+      <section class="view" id="view-progress">
+        <div class="page-head"><span class="eyebrow">이 브라우저에 자동 저장</span><h1>학습 현황</h1><p>빈칸·키워드·서술형의 오답과 자기평가를 함께 반영합니다.</p></div>
+        <div class="metrics"><article><span>누적 풀이</span><strong id="m-attempts">0</strong><small>문제</small></article><article><span>성공률</span><strong id="m-rate">0%</strong><small>충분히 씀 포함</small></article><article><span>안정 암기</span><strong id="m-mastered">0</strong><small>3회 연속 성공</small></article><article><span>복습 대기</span><strong id="m-due">0</strong><small>지금 다시 볼 문제</small></article></div>
+        <div class="panels"><article class="panel"><h2>유형별 성취도</h2><div id="type-progress" class="bars"></div></article><article class="panel"><h2>우선 복습</h2><ol id="weak-list" class="weak-list"></ol></article></div>
+        <button class="secondary reset" id="reset-progress">학습기록 초기화</button>
+      </section>
+
+      <section class="view" id="view-guide">
+        <div class="page-head"><span class="eyebrow">자료 22쪽 분석</span><h1>시험 범위와 학습 순서</h1><p>자료 첫 쪽의 배점, 예시문항, 2025년 출제표시를 기준으로 정리했습니다.</p></div>
+        <div class="guide-grid">
+          <article><span>30점 설명형</span><h2>최우선 8개 주제</h2><p>가설 조건, 자료수집법, 표집, 척도, 신뢰도·타당도, 분산통제, 집중경향·산포, 완전무작위설계</p></article>
+          <article><span>10점 개념형</span><h2>정의 + 구별 기준</h2><p>1·2차 자료, 표본오차, 변수, 중심극한정리, 유사·사후실험, 오류, 유의수준·확률, 상관 등을 150~200자로 연습합니다.</p></article>
+          <article><span>권장 순서</span><h2>빈칸 → 키워드 → 서술</h2><p>용어를 정확히 회상한 뒤 채점 키워드를 묶고, 마지막에 500자 이상 답안을 완성하세요.</p></article>
+        </div>
+        <div class="coverage"><h2>문제 구성</h2><div><span><b id="count-cloze">40</b>빈칸</span><span><b id="count-keyword">32</b>키워드</span><span><b id="count-essay">10</b>서술형</span></div></div>
+      </section>
+    </section>
+  </main>
+
+  <nav class="mobile-nav"><button class="is-active" data-view="study">✎<span>문제</span></button><button data-view="progress">◎<span>현황</span></button><button data-view="guide">≡<span>범위</span></button></nav>
+  <dialog id="reset-dialog"><form method="dialog"><h2>학습기록을 지울까요?</h2><p>정답·오답·복습일정·북마크가 모두 삭제됩니다.</p><div><button value="cancel" class="secondary">아니요</button><button value="confirm" class="danger">초기화</button></div></form></dialog>
+
+  <script src="./questions.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
